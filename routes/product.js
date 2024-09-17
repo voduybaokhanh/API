@@ -12,22 +12,22 @@ router.get('/list', function (req, res, next) {
     res.json(list);
 });
 
-//localhost:3000/product/data
 //chuyen theo dang query
+//localhost:3000/product/data
 router.get('/data', function (req, res) {
     const { name, age } = req.query;
     res.json({ ten: name, tuoi: age });
 });
 
-//localhost:3000/product/data/FPT/25
 //chuyen theo dang params
+//localhost:3000/product/data/FPT/25
 router.get("/data/:name/:age", function (req, res) {
     const { name, age } = req.params;
     res.json({ ten: name, tuoi: age });
 });
 
-//localhost:3000/product/data
 //chuyen theo dang body
+//localhost:3000/product/data
 router.post("/data", function (req, res) {
     const { name, age } = req.body;
     res.json({ ten: name, tuoi: age });
