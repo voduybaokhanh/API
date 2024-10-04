@@ -11,7 +11,7 @@ require('./models/Product');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var productRouter = require('./routes/product');
+var productRouter = require('./routes/products');
 var categoryRouter = require('./routes/categories');
 var workerRouter = require('./routes/worker');
 

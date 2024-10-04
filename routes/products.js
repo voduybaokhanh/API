@@ -5,8 +5,36 @@ var productModel = require("../models/Product");
 //localhost:3000/product/list
 router.get('/list', async function (req, res, next) {
     var data = await productModel.find();
-    res.json(data);
+    res.json({ status: true, data });
 });
+
+//Lấy danh sách sản phẩm có số lượng dưới 100
+//localhost:3000/product/list-duoi-100
+router.get('/list-duoi-100', async function (req, res, next) {
+    var data = await productModel.find({ quantity: { $lt: 100 } });
+    res.json({ status: true, data });
+});
+
+//Lấy danh sách sản phẩm có giá trên 5000 và số lượng dưới 50
+//localhost:3000/product/list-tren-5000-duoi-50
+router.get('/list-tren-5000-duoi-50', async function (req, res, next) {
+    var data = await productModel.find({ price: { $gt: 5000 }, quantity: { $lt: 50 } });
+    res.json({ status: true, data });
+});
+
+//Lấy toàn bộ danh sách sản phẩm thuộc loại "xxx" ( với xxx là do người dùng truyền vào)
+//localhost:3000/product/list-category
+router.get('/list-category', async function (req, res, next) {
+    try {
+        const category = req.query;
+        var data = await productModel.find
+            ({ name: category });
+        res.json({ status: true, data });
+    } catch (error) {
+        res.json({ status: false, message: "khong tim thay" });
+    }
+});
+
 
 //chuyen theo dang query
 //localhost:3000/product/data
@@ -35,10 +63,10 @@ router.post("/add", async function (req, res, next) {
     try {
         const { name, price, quantity, image, category } = req.body;
         const newProduct = { name, price, quantity, image, category };
-        var data = await productModel.create(newProduct);
+        await productModel.create(newProduct);
         res.json({ status: true, message: "Thêm sản phẩm thành công" });
     } catch (err) {
-        res.json({ status: false, message: "Thêm sản phẩm thất bại" });
+        res.json({ status: false, message: "Thêm sản phẩm thất bại", error: err.message });
     }
 });
 
