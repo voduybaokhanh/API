@@ -8,11 +8,19 @@ var logger = require('morgan');
 const mongoose = require('mongoose');
 require('./models/Category');
 require('./models/Product');
+require('./models/Order');
+require('./models/OrderItem');
+require('./models/Payment');
+require('./models/User');
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var productRouter = require('./routes/products');
 var categoryRouter = require('./routes/categories');
+var ordersRouter = require('./routes/orders');
+var orderitemsRouter = require('./routes/orderitems');
+var paymentsRouter = require('./routes/payments');
 var workerRouter = require('./routes/worker');
 
 var app = express();
@@ -39,7 +47,10 @@ mongoose.connect('mongodb://localhost:27017/MD19201', {
 
 //http://localhost:3000/home
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/user', usersRouter);
+app.use('/order', ordersRouter);
+app.use('/orderitem', orderitemsRouter);
+app.use('/payment', paymentsRouter);
 app.use('/product', productRouter);
 app.use('/worker', workerRouter);
 app.use('/category', categoryRouter);

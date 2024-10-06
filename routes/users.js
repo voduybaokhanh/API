@@ -1,20 +1,23 @@
 var express = require('express');
 var router = express.Router();
 var sendMail = require("../utils/configMail");
+var usersRouter = require('../models/User');
 
-/* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.send('respond with a resource');
+//lấy danh sách user
+//localhost:3000/user/list
+router.get('/list', async function (req, res, next) {
+    var data = await usersRouter.find();
+    res.json({ status: true, data });
 });
 
 //gửi mail
-//localhost:3000/users/send-mail
+//localhost:3000/user/send-mail
 router.post("/send-mail", async function (req, res, next) {
-  try {
-    const { to, subject, content } = req.body;
+    try {
+        const { to, subject, content } = req.body;
 
-    // Mẫu HTML cho email
-    const htmlContent = `
+        // Mẫu HTML cho email
+        const htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -85,18 +88,62 @@ router.post("/send-mail", async function (req, res, next) {
       </html>
     `;
 
-    const mailOptions = {
-      from: "khanhvo908@gmail.com",
-      to: to,
-      subject: subject,
-      html: htmlContent 
-    };
+        const mailOptions = {
+            from: "khanhvo908@gmail.com",
+            to: to,
+            subject: subject,
+            html: htmlContent
+        };
 
-    await sendMail.transporter.sendMail(mailOptions);
-    res.json({ status: true, message: "Gửi mail thành công" });
-  } catch (err) {
-    res.json({ status: false, message: "Gửi mail thất bại", err: err });
-  }
+        await sendMail.transporter.sendMail(mailOptions);
+        res.json({ status: true, message: "Gửi mail thành công" });
+    } catch (err) {
+        res.json({ status: false, message: "Gửi mail thất bại", err: err });
+    }
 });
 
+//thêm user
+//localhost:3000/user/add
+router.post('/add', async function (req, res, next) {
+    try {
+        const { name, email, password } = req.body;
+        const addItem = { name, email, password };
+        await usersRouter.create(addItem);
+        res.json({ status: true, message: "Thêm thành công" });
+    } catch (error) {
+        res.json({ status: false, message: "Thêm thất bại", err: err });
+    }
+});
+
+//sửa user dạng param
+//localhost:3000/user/edit
+router.put('/edit', async function (req, res, next) {
+    try {
+        const { id, name, email, password } = req.body;
+        var itemUpdate = await usersRouter.findById(id);
+        if (itemUpdate) {
+            itemUpdate.name = name ? name : itemUpdate;
+            itemUpdate.email = email ? email : itemUpdate;
+            itemUpdate.password = password ? password : itemUpdate;
+            await itemUpdate.save();
+            res.json({ status: true, message: "Sửa thành công" });
+        } else {
+            res.json({ status: false, message: "Không tìm thấy", err: err });
+        }
+    } catch (error) {
+        res.json({ status: false, message: "Sửa thất bại", err: err });
+    }
+});
+
+//xóa user
+//localhost:3000/user/delete
+router.delete('/delete', async function (req, res, next) {
+    try {
+        var id = req.body.id;
+        await usersRouter.findByIdAndDelete(id);
+        res.json({ status: true, message: "Xóa thành công" });
+    } catch (error) {
+        res.json({ status: false, message: "Xóa thất bại", err: err });
+    }
+});
 module.exports = router;

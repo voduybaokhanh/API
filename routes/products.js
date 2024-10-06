@@ -44,7 +44,6 @@ router.get("/detail", async function (req, res) {
 
 //Lấy thông tin khóa ngoại
 //localhost:3000/product/list-product-with-category
-//chua xong
 router.get('/list-product-with-category', async function (req, res, next) {
     try {
         var data = await productModel.find().populate('category');

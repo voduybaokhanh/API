@@ -5,7 +5,7 @@ const ObjectId = Schema.ObjectId;
 const orderitem = new Schema({
     id: { type: ObjectId },
     quantity: { type: Number },
-    price: { type: Number },
+    total_price: { type: Number },
     order: { type: ObjectId, ref: 'order' },
     product: { type: ObjectId, ref: 'product' },
 });
