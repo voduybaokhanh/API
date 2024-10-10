@@ -35,9 +35,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//swagger
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./utils/configSwagger');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+
 //connect database
 //mongodb://localhost:27017/
-mongoose.connect('mongodb+srv://khanhvo908:0774749399@cluster0.g5qbg.mongodb.net/MD19201', {
+mongoose.connect('mongodb://localhost:27017/MD19201', {
+// mongoose.connect('mongodb+srv://khanhvo908:0774749399@cluster0.g5qbg.mongodb.net/MD19201', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
