@@ -8,7 +8,7 @@ const options = {
       description: 'Viết chơi API',
     },
   },
-  apis: ['../routes/*.js'], // Đường dẫn đến các file định nghĩa API
+  apis: ['./routes/*.js'], // Đường dẫn đến các file định nghĩa API
 };
 const swaggerSpec = swaggerJSDoc(options);
 module.exports = swaggerSpec;
