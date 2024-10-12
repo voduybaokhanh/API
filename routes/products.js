@@ -1,7 +1,9 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 var productModel = require("../models/Product");
-var upload = require('../utils/configMulter');
+var upload = require("../utils/configMulter");
+const JWT = require('jsonwebtoken');
+const config = require('../utils/configENV')
 
 /**
  * @swagger
@@ -9,6 +11,8 @@ var upload = require('../utils/configMulter');
  *   get:
  *     summary: Lấy danh sách sản phẩm
  *     responses:
+ *       400:
+ *         description: Lỗi server, sai gì đó
  *       200:
  *         description: Trả về danh sách sản phẩm
  *         content:
@@ -18,7 +22,7 @@ var upload = require('../utils/configMulter');
  *               items:
  *                 type: object
  */
-router.get('/list', async function(req, res, next) {
+router.get("/list", async function (req, res, next) {
     var data = await productModel.find();
     res.json({ status: true, data });
 });
@@ -46,7 +50,7 @@ router.get('/list', async function(req, res, next) {
  *         description: Trả về thông tin người dùng
  */
 //localhost:3000/data
-router.get('/data', function (req, res) {
+router.get("/data", function (req, res) {
     const { name, age } = req.query;
     res.json({ ten: name, tuoi: age });
 });
@@ -123,13 +127,32 @@ router.post("/data", function (req, res) {
  */
 router.get("/detail", async function (req, res) {
     try {
-        var id = req.query.id;
-        var data = await productModel.findById(id);
-        res.json({ status: true, data });
+        const authHeader = req.header("Authorization");
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            const token = authHeader.split(' ')[1];
+            JWT.verify(token, config.SECRETKEY, async function (err, decoded) {
+                if (err) {
+                    res.status(403).json({ status: 403, message: "Token không hợp lệ", error: err });
+                } else {
+                    const productId = req.query.id;
+                    if (!productId) {
+                        return res.status(400).json({ status: false, message: "Thiếu ID sản phẩm" });
+                    }
+                    const data = await productModel.findById(productId);
+                    if (!data) {
+                        return res.status(404).json({ status: false, message: "Sản phẩm không tồn tại" });
+                    }
+                    res.json({ status: true, data });
+                }
+            });
+        } else {
+            res.status(401).json({ status: 401, message: "Thiếu token xác thực" });
+        }
     } catch (error) {
-        res.json({ status: false, message: "khong tim thay" });
+        res.status(500).json({ status: false, message: "Lỗi máy chủ", error });
     }
 });
+
 
 /**
  * @swagger
@@ -140,9 +163,9 @@ router.get("/detail", async function (req, res) {
  *       200:
  *         description: Trả về danh sách sản phẩm kèm theo thông tin category
  */
-router.get('/list-product-with-category', async function (req, res, next) {
+router.get("/list-product-with-category", async function (req, res, next) {
     try {
-        var data = await productModel.find().populate('category');
+        var data = await productModel.find().populate("category");
         res.json({ status: true, data });
     } catch (error) {
         res.json({ status: false, message: "khong tim thay" });
@@ -164,8 +187,10 @@ router.get('/list-product-with-category', async function (req, res, next) {
  *     responses:
  *       200:
  *         description: Trả về danh sách sản phẩm theo category
+ *       400:
+ *         description: Thêm sản phẩm thất bại
  */
-router.get('/list-category', async function (req, res, next) {
+router.get("/list-category", async function (req, res, next) {
     try {
         const { id } = req.query;
         var data = await productModel.find({ category: id });
@@ -200,6 +225,8 @@ router.get('/list-category', async function (req, res, next) {
  *     responses:
  *       200:
  *         description: Thêm sản phẩm thành công
+ *       400:
+ *         description: Thêm sản phẩm thất bại
  */
 router.post("/add", async function (req, res, next) {
     try {
@@ -208,7 +235,11 @@ router.post("/add", async function (req, res, next) {
         await productModel.create(newProduct);
         res.json({ status: true, message: "Thêm sản phẩm thành công" });
     } catch (err) {
-        res.json({ status: false, message: "Thêm sản phẩm thất bại", error: err.message });
+        res.json({
+            status: false,
+            message: "Thêm sản phẩm thất bại",
+            error: err.message,
+        });
     }
 });
 
@@ -239,6 +270,9 @@ router.post("/add", async function (req, res, next) {
  *     responses:
  *       200:
  *         description: Sửa sản phẩm thành công
+ *       400:
+ *         description: Sửa sản phẩm thất bại
+ *
  */
 router.post("/edit", async function (req, res, next) {
     try {
@@ -278,6 +312,8 @@ router.post("/edit", async function (req, res, next) {
  *     responses:
  *       200:
  *         description: Xóa sản phẩm thành công
+ *       400:
+ *         description: Xóa sản phẩm thất bại
  */
 router.delete("/delete", async function (req, res, next) {
     try {

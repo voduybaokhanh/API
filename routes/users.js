@@ -2,6 +2,9 @@ var express = require('express');
 var router = express.Router();
 var sendMail = require("../utils/configMail");
 var usersRouter = require('../models/User');
+const JWT = require('jsonwebtoken');
+const config = require('../utils/configENV')
+
 
 //lấy danh sách user
 //localhost:3000/user/list
@@ -146,4 +149,33 @@ router.delete('/delete', async function (req, res, next) {
         res.json({ status: false, message: "Xóa thất bại", err: err });
     }
 });
+
+//sign-in
+//localhost:3000/user/sign-in
+router.post('/sign-in', async function (req, res, next) {
+    try {
+        const { email, password } = req.body;
+        var user = await usersRouter.findOne({
+            email
+        });
+        if (user) {
+            if (user.password === password) {
+                //Token người dùng sẽ sử dụng gửi lên trên header mỗi lần muốn gọi api
+                const token = JWT.sign({ id: user._id }, config.SECRETKEY, { expiresIn: '30s' });
+                //Khi token hết hạn, người dùng sẽ call 1 api khác để lấy token mới
+                //Lúc này người dùng sẽ truyền refreshToken lên để nhận về 1 cặp token, refreshToken mới
+                //Nếu cả 2 token đều hết hạn người dùng sẽ phải thoát app và đăng nhập lại
+                const refreshToken = JWT.sign({ id: user._id }, config.SECRETKEY, { expiresIn: '1h' })
+                res.json({ status: true, message: "Đăng nhập thành công", token: token, refreshToken: refreshToken });
+            } else {
+                res.json({ status: false, message: "Sai mật khẩu" });
+            }
+        } else {
+            res.json({ status: false, message: "Không tìm thấy user" });
+        }
+    } catch (error) {
+        res.json({ status: false, message: "Đăng nhập thất bại", err:err });
+    }
+});
+
 module.exports = router;
