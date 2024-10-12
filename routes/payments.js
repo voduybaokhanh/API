@@ -2,8 +2,24 @@ var express = require('express');
 var router = express.Router();
 var paymentsModel = require("../models/Payment");
 
-//thêm payment với payment_date là now
-//localhost:3000/payment/add
+/**
+ * @swagger
+ * /payment/add:
+ *   post:
+ *     summary: Thêm một payment mới
+ *     tags: [Payment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Payment'
+ *     responses:
+ *       200:
+ *         description: Thêm thành công
+ *       400:
+ *         description: Thêm thất bại
+ */
 router.post('/add', async function (req, res, next) {
     try {
         const { order, payment_date, payment_method, payment_status } = req.body;
@@ -15,8 +31,24 @@ router.post('/add', async function (req, res, next) {
     }
 });
 
-//Lấy toàn bộ danh sách payment
-//localhost:3000/payment/list
+/**
+ * @swagger
+ * /payment/list:
+ *   get:
+ *     summary: Lấy toàn bộ danh sách thanh toán
+ *     tags: [Payment]
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách các thanh toán
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Payment'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/list', async function (req, res, next) {
     try {
         var data = await paymentsModel.find();
@@ -26,8 +58,31 @@ router.get('/list', async function (req, res, next) {
     }
 });
 
-//Lấy danh sách payment theo trạng thái
-//localhost:3000/payment/list-status
+/**
+ * @swagger
+ * /payment/list-status:
+ *   get:
+ *     summary: Lấy danh sách thanh toán theo trạng thái
+ *     tags: [Payment]
+ *     parameters:
+ *       - in: query
+ *         name: payment_status
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Trạng thái thanh toán cần tìm
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách các thanh toán theo trạng thái
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Payment'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/list-status', async function (req, res, next) {
     try {
         const { payment_status } = req.query;
@@ -38,8 +93,24 @@ router.get('/list-status', async function (req, res, next) {
     }
 });
 
-//Lấy thông tin khóa ngoại
-//localhost:3000/payment/list-payment-with-order
+/**
+ * @swagger
+ * /payment/list-payment-with-order:
+ *   get:
+ *     summary: Lấy danh sách thanh toán và thông tin đơn hàng liên kết
+ *     tags: [Payment]
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách thanh toán và thông tin đơn hàng liên kết
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Payment'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/list-payment-with-order', async function (req, res, next) {
     try {
         var data = await paymentsModel.find().populate('order');
@@ -49,8 +120,28 @@ router.get('/list-payment-with-order', async function (req, res, next) {
     }
 });
 
-// Tự động sửa trạng thái "paid" khi đã thanh toán thành công
-// localhost:3000/payment/edit
+/**
+ * @swagger
+ * /payment/edit:
+ *   put:
+ *     summary: Sửa trạng thái thanh toán thành "paid"
+ *     tags: [Payment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: ID của thanh toán
+ *     responses:
+ *       200:
+ *         description: Sửa thành công
+ *       404:
+ *         description: Không tìm thấy đơn thanh toán
+ */
 router.put('/edit', async function (req, res, next) {
     try {
         const { id } = req.body;
@@ -69,9 +160,18 @@ router.put('/edit', async function (req, res, next) {
     }
 });
 
-//Tự động sửa trạng thái "failed" nếu payment "pending" 1 ngày
-//localhost:3000/payment/auto-failed
-//đang test
+/**
+ * @swagger
+ * /payment/auto-failed:
+ *   put:
+ *     summary: Tự động sửa trạng thái thành "failed" nếu thanh toán "pending" hơn 1 ngày
+ *     tags: [Payment]
+ *     responses:
+ *       200:
+ *         description: Sửa thành công
+ *       400:
+ *         description: Sửa thất bại
+ */
 router.put('/auto-failed', async function (req, res, next) {
     try {
         var date = new Date();
@@ -86,8 +186,28 @@ router.put('/auto-failed', async function (req, res, next) {
     }
 });
 
-//Thủ công payment failed
-//localhost:3000/payment/manual-failed
+/**
+ * @swagger
+ * /payment/manual-failed:
+ *   put:
+ *     summary: Thủ công sửa trạng thái thành "failed"
+ *     tags: [Payment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: ID của thanh toán
+ *     responses:
+ *       200:
+ *         description: Sửa thành công
+ *       404:
+ *         description: Không tìm thấy đơn thanh toán
+ */
 router.put('/manual-failed', async function (req, res, next) {
     try {
         const { id } = req.body;
@@ -104,8 +224,28 @@ router.put('/manual-failed', async function (req, res, next) {
     }
 });
 
-//Xóa payment
-//localhost:3000/payment/delete
+/**
+ * @swagger
+ * /payment/delete:
+ *   delete:
+ *     summary: Xóa một thanh toán
+ *     tags: [Payment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: ID của thanh toán
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ *       404:
+ *         description: Không tìm thấy thanh toán
+ */
 router.delete('/delete', async function (req, res, next) {
     try {
         var id = req.body.id;

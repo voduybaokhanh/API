@@ -3,8 +3,35 @@ var router = express.Router();
 var orderitemsRouter = require('../models/OrderItem');
 var productsRouter = require('../models/Product'); // Đảm bảo import mô hình Product
 
-// Thêm chi tiết sản phẩm có total_price = price * quantity với price của product
-// localhost:3000/orderitem/add
+/**
+ * @swagger
+ * /orderitem/add:
+ *   post:
+ *     summary: Thêm một chi tiết sản phẩm
+ *     tags: [OrderItem]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               quantity:
+ *                 type: integer
+ *               productID:
+ *                 type: string
+ *               order:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Thêm chi tiết sản phẩm thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrderItem'
+ *       400:
+ *         description: Thêm thất bại
+ */
 router.post('/add', async function (req, res, next) {
     try {
         const { quantity, order, productID } = req.body; // Sử dụng productID thay vì product để dễ quản lý
@@ -22,8 +49,35 @@ router.post('/add', async function (req, res, next) {
     }
 });
 
-// Sửa chi tiết sản phẩm
-// localhost:3000/orderitem/edit
+/**
+ * @swagger
+ * /orderitem/edit:
+ *   put:
+ *     summary: Sửa chi tiết sản phẩm
+ *     tags: [OrderItem]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               quantity:
+ *                 type: integer
+ *               productID:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sửa chi tiết sản phẩm thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrderItem'
+ *       404:
+ *         description: Không tìm thấy chi tiết sản phẩm hoặc sản phẩm
+ */
 router.put('/edit', async function (req, res, next) {
     try {
         const { id, quantity, productID } = req.body;
@@ -47,8 +101,27 @@ router.put('/edit', async function (req, res, next) {
     }
 });
 
-// Xóa chi tiết sản phẩm
-// localhost:3000/orderitem/delete
+/**
+ * @swagger
+ * /orderitem/delete:
+ *   delete:
+ *     summary: Xóa chi tiết sản phẩm
+ *     tags: [OrderItem]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Xóa chi tiết sản phẩm thành công
+ *       404:
+ *         description: Không tìm thấy chi tiết sản phẩm
+ */
 router.delete('/delete', async function (req, res, next) {
     try {
         var id = req.body.id;
@@ -59,8 +132,24 @@ router.delete('/delete', async function (req, res, next) {
     }
 });
 
-//lấy thông tin khóa ngoại
-//localhost:3000/orderitem/get-list-orderitem-with-product
+/**
+ * @swagger
+ * /orderitem/get-list-orderitem-with-product:
+ *   get:
+ *     summary: Lấy danh sách chi tiết sản phẩm với thông tin sản phẩm
+ *     tags: [OrderItem]
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách chi tiết sản phẩm và thông tin sản phẩm liên kết
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/OrderItem'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/get-list-orderitem-with-product', async function (req, res, next) {
     try {
         var data = await orderitemsRouter.find().populate('product');
@@ -70,8 +159,24 @@ router.get('/get-list-orderitem-with-product', async function (req, res, next) {
     }
 });
 
-//lấy thông tin khóa ngoại
-//localhost:3000/orderitem/get-list-orderitem-with-order
+/**
+ * @swagger
+ * /orderitem/get-list-orderitem-with-order:
+ *   get:
+ *     summary: Lấy danh sách chi tiết sản phẩm với thông tin đơn hàng
+ *     tags: [OrderItem]
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách chi tiết sản phẩm và thông tin đơn hàng liên kết
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/OrderItem'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/get-list-orderitem-with-order', async function (req, res, next) {
     try {
         var data = await orderitemsRouter.find().populate('order');

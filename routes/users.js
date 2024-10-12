@@ -5,16 +5,46 @@ var usersRouter = require('../models/User');
 const JWT = require('jsonwebtoken');
 const config = require('../utils/configENV')
 
-
-//lấy danh sách user
-//localhost:3000/user/list
+/**
+ * @swagger
+ * /user/list:
+ *   get:
+ *     summary: Lấy danh sách người dùng
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Danh sách người dùng
+ */
 router.get('/list', async function (req, res, next) {
     var data = await usersRouter.find();
     res.json({ status: true, data });
 });
 
-//gửi mail
-//localhost:3000/user/send-mail
+/**
+ * @swagger
+ * /user/send-mail:
+ *   post:
+ *     summary: Gửi email
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               to:
+ *                 type: string
+ *               subject:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Gửi mail thành công
+ *       400:
+ *         description: Gửi mail thất bại
+ */
 router.post("/send-mail", async function (req, res, next) {
     try {
         const { to, subject, content } = req.body;
@@ -105,8 +135,31 @@ router.post("/send-mail", async function (req, res, next) {
     }
 });
 
-//thêm user
-//localhost:3000/user/add
+/**
+ * @swagger
+ * /user/add:
+ *   post:
+ *     summary: Thêm người dùng
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Thêm thành công
+ *       400:
+ *         description: Thêm thất bại
+ */
 router.post('/add', async function (req, res, next) {
     try {
         const { name, email, password } = req.body;
@@ -118,7 +171,34 @@ router.post('/add', async function (req, res, next) {
     }
 });
 
-//sửa user dạng param
+
+/**
+ * @swagger
+ * /user/edit:
+ *   put:
+ *     summary: Sửa người dùng
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sửa thành công
+ *       404:
+ *         description: Không tìm thấy
+ */
 //localhost:3000/user/edit
 router.put('/edit', async function (req, res, next) {
     try {
@@ -138,8 +218,27 @@ router.put('/edit', async function (req, res, next) {
     }
 });
 
-//xóa user
-//localhost:3000/user/delete
+/**
+ * @swagger
+ * /user/delete:
+ *   delete:
+ *     summary: Xóa người dùng
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.delete('/delete', async function (req, res, next) {
     try {
         var id = req.body.id;
@@ -150,8 +249,29 @@ router.delete('/delete', async function (req, res, next) {
     }
 });
 
-//sign-in
-//localhost:3000/user/sign-in
+/**
+ * @swagger
+ * /user/sign-in:
+ *   post:
+ *     summary: Đăng nhập người dùng
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Đăng nhập thành công
+ *       400:
+ *         description: Sai mật khẩu hoặc không tìm thấy user
+ */
 router.post('/sign-in', async function (req, res, next) {
     try {
         const { email, password } = req.body;
@@ -161,11 +281,11 @@ router.post('/sign-in', async function (req, res, next) {
         if (user) {
             if (user.password === password) {
                 //Token người dùng sẽ sử dụng gửi lên trên header mỗi lần muốn gọi api
-                const token = JWT.sign({ id: user._id }, config.SECRETKEY, { expiresIn: '30s' });
+                const token = JWT.sign({ id: email }, config.SECRETKEY, { expiresIn: '1d' });
                 //Khi token hết hạn, người dùng sẽ call 1 api khác để lấy token mới
                 //Lúc này người dùng sẽ truyền refreshToken lên để nhận về 1 cặp token, refreshToken mới
                 //Nếu cả 2 token đều hết hạn người dùng sẽ phải thoát app và đăng nhập lại
-                const refreshToken = JWT.sign({ id: user._id }, config.SECRETKEY, { expiresIn: '1h' })
+                const refreshToken = JWT.sign({ id: email }, config.SECRETKEY, { expiresIn: '1d' })
                 res.json({ status: true, message: "Đăng nhập thành công", token: token, refreshToken: refreshToken });
             } else {
                 res.json({ status: false, message: "Sai mật khẩu" });

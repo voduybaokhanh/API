@@ -10,6 +10,7 @@ const config = require('../utils/configENV')
  * /product/list:
  *   get:
  *     summary: Lấy danh sách sản phẩm
+ *     tags: [Product]
  *     responses:
  *       400:
  *         description: Lỗi server, sai gì đó
@@ -32,6 +33,7 @@ router.get("/list", async function (req, res, next) {
  * /product/data:
  *   get:
  *     summary: Lấy dữ liệu theo query string
+ *     tags: [Product]
  *     parameters:
  *       - in: query
  *         name: name
@@ -60,6 +62,7 @@ router.get("/data", function (req, res) {
  * /product/data/{name}/{age}:
  *   get:
  *     summary: Lấy dữ liệu theo params
+ *     tags: [Product]
  *     parameters:
  *       - in: path
  *         name: name
@@ -87,6 +90,7 @@ router.get("/data/:name/:age", function (req, res) {
  * /product/data:
  *   post:
  *     summary: Lấy dữ liệu theo body
+ *     tags: [Product]
  *     requestBody:
  *       required: true
  *       content:
@@ -114,6 +118,7 @@ router.post("/data", function (req, res) {
  * /product/detail:
  *   get:
  *     summary: Lấy chi tiết sản phẩm theo id
+ *     tags: [Product]
  *     parameters:
  *       - in: query
  *         name: id
@@ -125,33 +130,40 @@ router.post("/data", function (req, res) {
  *       200:
  *         description: Trả về thông tin chi tiết sản phẩm
  */
+//lấy chi tiết sản phẩm với token
 router.get("/detail", async function (req, res) {
     try {
-        const authHeader = req.header("Authorization");
-        if (authHeader && authHeader.startsWith("Bearer ")) {
-            const token = authHeader.split(' ')[1];
-            JWT.verify(token, config.SECRETKEY, async function (err, decoded) {
-                if (err) {
-                    res.status(403).json({ status: 403, message: "Token không hợp lệ", error: err });
+        const token = req.header("Authorization")?.split(' ')[1];
+        console.log("Token:", token); // Thêm dòng log để kiểm tra token
+        if (token) {
+            JWT.verify(token, config.SECRETKEY, async function (error, productId) {
+                if (error) {
+                    return res.json({ status: false, message: "Chưa có token: " + error.message });
                 } else {
-                    const productId = req.query.id;
+                    // Xử lý chức năng API
+                    var productId = req.query.id;
                     if (!productId) {
-                        return res.status(400).json({ status: false, message: "Thiếu ID sản phẩm" });
+                        return res.json({ status: false, message: "Sai ID 1" });
                     }
-                    const data = await productModel.findById(productId);
+
+                    var data = await productModel.findById(productId);
                     if (!data) {
-                        return res.status(404).json({ status: false, message: "Sản phẩm không tồn tại" });
+                        return res.json({ status: false, message: "Không tìm thấy sản phẩm" });
                     }
+
                     res.json({ status: true, data });
                 }
             });
         } else {
-            res.status(401).json({ status: 401, message: "Thiếu token xác thực" });
+            res.json({ status: false, message: "Sai ID 2" });
         }
     } catch (error) {
-        res.status(500).json({ status: false, message: "Lỗi máy chủ", error });
+        res.json({ status: false, message: "Có lỗi xảy ra: " + error.message });
     }
 });
+
+
+
 
 
 /**
@@ -159,6 +171,7 @@ router.get("/detail", async function (req, res) {
  * /product/list-product-with-category:
  *   get:
  *     summary: Lấy danh sách sản phẩm kèm theo thông tin khóa ngoại category
+ *     tags: [Product]
  *     responses:
  *       200:
  *         description: Trả về danh sách sản phẩm kèm theo thông tin category
@@ -177,6 +190,7 @@ router.get("/list-product-with-category", async function (req, res, next) {
  * /product/list-category:
  *   get:
  *     summary: Lấy danh sách sản phẩm theo category
+ *     tags: [Product]
  *     parameters:
  *       - in: query
  *         name: id
@@ -205,6 +219,7 @@ router.get("/list-category", async function (req, res, next) {
  * /product/add:
  *   post:
  *     summary: Thêm sản phẩm mới
+ *     tags: [Product]
  *     requestBody:
  *       required: true
  *       content:
@@ -248,6 +263,7 @@ router.post("/add", async function (req, res, next) {
  * /product/edit:
  *   post:
  *     summary: Sửa sản phẩm
+ *     tags: [Product]
  *     requestBody:
  *       required: true
  *       content:
@@ -299,6 +315,7 @@ router.post("/edit", async function (req, res, next) {
  * /product/delete:
  *   delete:
  *     summary: Xóa sản phẩm
+ *     tags: [Product]
  *     requestBody:
  *       required: true
  *       content:

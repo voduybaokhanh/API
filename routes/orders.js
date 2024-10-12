@@ -2,8 +2,31 @@ var express = require('express');
 var router = express.Router();
 var ordersRouter = require('../models/Order');
 
-//lấy tất cả order của user
-//localhost:3000/order/getall/:id
+/**
+ * @swagger
+ * /order/getall/{id}:
+ *   get:
+ *     summary: Lấy tất cả đơn hàng của người dùng
+ *     tags: [Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID của người dùng
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách đơn hàng của người dùng
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/getall/:id', async function (req, res, next) {
     try {
         var orders = await ordersRouter.find({ user: req.params.id });
@@ -13,8 +36,24 @@ router.get('/getall/:id', async function (req, res, next) {
     }
 });
 
-//lấy tất cả order
-//localhost:3000/order/getall
+/**
+ * @swagger
+ * /order/getall:
+ *   get:
+ *     summary: Lấy tất cả đơn hàng
+ *     tags: [Order]
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách tất cả các đơn hàng
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/getall', async function (req, res, next) {
     try {
         var orders = await ordersRouter.find();
@@ -24,8 +63,24 @@ router.get('/getall', async function (req, res, next) {
     }
 });
 
-//lấy thông tin khóa ngoại
-//localhost:3000/order/get-list-order-with-user
+/**
+ * @swagger
+ * /order/get-list-order-with-user:
+ *   get:
+ *     summary: Lấy danh sách đơn hàng và thông tin người dùng liên kết
+ *     tags: [Order]
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách đơn hàng và thông tin người dùng liên kết
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Không tìm thấy
+ */
 router.get('/get-list-order-with-user', async function (req, res, next) {
     try {
         var data = await ordersRouter.find().populate('user');
@@ -35,8 +90,24 @@ router.get('/get-list-order-with-user', async function (req, res, next) {
     }
 });
 
-//thêm order với order_date là now
-//localhost:3000/order/add
+/**
+ * @swagger
+ * /order/add:
+ *   post:
+ *     summary: Thêm một đơn hàng mới
+ *     tags: [Order]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Order'
+ *     responses:
+ *       200:
+ *         description: Thêm thành công
+ *       400:
+ *         description: Thêm thất bại
+ */
 router.post('/add', async function (req, res, next) {
     try {
         const { user, order_date } = req.body;
@@ -48,8 +119,28 @@ router.post('/add', async function (req, res, next) {
     }
 });
 
-//Xóa order
-//localhost:3000/order/delete
+/**
+ * @swagger
+ * /order/delete:
+ *   delete:
+ *     summary: Xóa một đơn hàng
+ *     tags: [Order]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: ID của đơn hàng
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ *       404:
+ *         description: Không tìm thấy đơn hàng
+ */
 router.delete('/delete', async function (req, res, next) {
     try {
         var id = req.body.id;
