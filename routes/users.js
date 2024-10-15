@@ -3,7 +3,8 @@ var router = express.Router();
 var sendMail = require("../utils/configMail");
 var usersRouter = require('../models/User');
 const JWT = require('jsonwebtoken');
-const config = require('../utils/configENV')
+const config = require('../utils/configENV');
+const authenticateToken = require('./authMiddleware'); // Import middleware
 
 /**
  * @swagger
@@ -15,7 +16,7 @@ const config = require('../utils/configENV')
  *       200:
  *         description: Danh sách người dùng
  */
-router.get('/list', async function (req, res, next) {
+router.get('/list', authenticateToken, async function (req, res, next) {
     var data = await usersRouter.find();
     res.json({ status: true, data });
 });
@@ -45,7 +46,7 @@ router.get('/list', async function (req, res, next) {
  *       400:
  *         description: Gửi mail thất bại
  */
-router.post("/send-mail", async function (req, res, next) {
+router.post("/send-mail", authenticateToken, async function (req, res, next) {
     try {
         const { to, subject, content } = req.body;
 
@@ -135,32 +136,8 @@ router.post("/send-mail", async function (req, res, next) {
     }
 });
 
-/**
- * @swagger
- * /user/add:
- *   post:
- *     summary: Thêm người dùng
- *     tags: [User]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Thêm thành công
- *       400:
- *         description: Thêm thất bại
- */
-router.post('/add', async function (req, res, next) {
+// Sử dụng middleware cho các route khác
+router.post('/add', authenticateToken, async function (req, res, next) {
     try {
         const { name, email, password } = req.body;
         const addItem = { name, email, password };
@@ -171,36 +148,7 @@ router.post('/add', async function (req, res, next) {
     }
 });
 
-
-/**
- * @swagger
- * /user/edit:
- *   put:
- *     summary: Sửa người dùng
- *     tags: [User]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Sửa thành công
- *       404:
- *         description: Không tìm thấy
- */
-//localhost:3000/user/edit
-router.put('/edit', async function (req, res, next) {
+router.put('/edit', authenticateToken, async function (req, res, next) {
     try {
         const { id, name, email, password } = req.body;
         var itemUpdate = await usersRouter.findById(id);
@@ -218,83 +166,13 @@ router.put('/edit', async function (req, res, next) {
     }
 });
 
-/**
- * @swagger
- * /user/delete:
- *   delete:
- *     summary: Xóa người dùng
- *     tags: [User]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *     responses:
- *       200:
- *         description: Xóa thành công
- *       404:
- *         description: Không tìm thấy
- */
-router.delete('/delete', async function (req, res, next) {
+router.delete('/delete', authenticateToken, async function (req, res, next) {
     try {
         var id = req.body.id;
         await usersRouter.findByIdAndDelete(id);
         res.json({ status: true, message: "Xóa thành công" });
     } catch (error) {
         res.json({ status: false, message: "Xóa thất bại", err: err });
-    }
-});
-
-/**
- * @swagger
- * /user/sign-in:
- *   post:
- *     summary: Đăng nhập người dùng
- *     tags: [User]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Đăng nhập thành công
- *       400:
- *         description: Sai mật khẩu hoặc không tìm thấy user
- */
-router.post('/sign-in', async function (req, res, next) {
-    try {
-        const { email, password } = req.body;
-        var user = await usersRouter.findOne({
-            email
-        });
-        if (user) {
-            if (user.password === password) {
-                //Token người dùng sẽ sử dụng gửi lên trên header mỗi lần muốn gọi api
-                const token = JWT.sign({ id: email }, config.SECRETKEY, { expiresIn: '1d' });
-                //Khi token hết hạn, người dùng sẽ call 1 api khác để lấy token mới
-                //Lúc này người dùng sẽ truyền refreshToken lên để nhận về 1 cặp token, refreshToken mới
-                //Nếu cả 2 token đều hết hạn người dùng sẽ phải thoát app và đăng nhập lại
-                const refreshToken = JWT.sign({ id: email }, config.SECRETKEY, { expiresIn: '1d' })
-                res.json({ status: true, message: "Đăng nhập thành công", token: token, refreshToken: refreshToken });
-            } else {
-                res.json({ status: false, message: "Sai mật khẩu" });
-            }
-        } else {
-            res.json({ status: false, message: "Không tìm thấy user" });
-        }
-    } catch (error) {
-        res.json({ status: false, message: "Đăng nhập thất bại", err:err });
     }
 });
 
