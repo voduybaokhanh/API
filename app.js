@@ -12,6 +12,8 @@ require('./models/Order');
 require('./models/OrderItem');
 require('./models/Payment');
 require('./models/User');
+require('./models/Exam');
+require('./models/Fine');
 
 
 var indexRouter = require('./routes/index');
@@ -21,7 +23,9 @@ var categoryRouter = require('./routes/categories');
 var ordersRouter = require('./routes/orders');
 var orderitemsRouter = require('./routes/orderitems');
 var paymentsRouter = require('./routes/payments');
+var examsRouter = require('./routes/exams');
 var workerRouter = require('./routes/worker');
+var fineRouter = require('./routes/fines');
 
 var app = express();
 
@@ -61,6 +65,9 @@ app.use('/payment', paymentsRouter);
 app.use('/product', productRouter);
 app.use('/worker', workerRouter);
 app.use('/category', categoryRouter);
+app.use('/exam', examsRouter);
+app.use('/fine', fineRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
