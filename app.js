@@ -14,6 +14,8 @@ require('./models/Payment');
 require('./models/User');
 require('./models/Exam');
 require('./models/Fine');
+require('./models/Vacine');
+
 
 
 var indexRouter = require('./routes/index');
@@ -26,6 +28,7 @@ var paymentsRouter = require('./routes/payments');
 var examsRouter = require('./routes/exams');
 var workerRouter = require('./routes/worker');
 var fineRouter = require('./routes/fines');
+var vacineRouter = require('./routes/vacines');
 
 var app = express();
 
@@ -67,6 +70,7 @@ app.use('/worker', workerRouter);
 app.use('/category', categoryRouter);
 app.use('/exam', examsRouter);
 app.use('/fine', fineRouter);
+app.use('/vacine', vacineRouter);
 
 
 // catch 404 and forward to error handler
